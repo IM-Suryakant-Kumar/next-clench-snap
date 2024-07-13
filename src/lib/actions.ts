@@ -265,7 +265,7 @@ export const addPost = async (formData: FormData, img: string) => {
 
 	if (!validatedDesc.success) {
 		// TODO
-    console.log("description is not valid!")
+		console.log("description is not valid!");
 		return;
 	}
 
@@ -282,8 +282,47 @@ export const addPost = async (formData: FormData, img: string) => {
 			},
 		});
 
-    revalidatePath("/")
+		revalidatePath("/");
 	} catch (error) {
-    console.error(error)
-  }
+		console.error(error);
+	}
 };
+
+export const addStory = async (img: string) => {
+	const { userId } = auth();
+
+	if (!userId) throw new Error("User is not Authenticated!!");
+
+	try {
+		const existingStory = await prisma.story.findFirst({
+			where: {
+				userId,
+			},
+		});
+
+		if (existingStory) {
+			await prisma.story.delete({
+				where: {
+					id: existingStory.id,
+				},
+			});
+		}
+
+		const createdStory = await prisma.story.create({
+			data: {
+				userId,
+				img,
+				expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+			},
+			include: {
+				user: true,
+			},
+		});
+
+		return createdStory;
+	} catch (error) {
+		console.error(error);
+	}
+};
+
+
