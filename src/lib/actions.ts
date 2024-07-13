@@ -325,4 +325,20 @@ export const addStory = async (img: string) => {
 	}
 };
 
+export const deletePost = async (postId: number) => {
+	const { userId } = auth();
 
+	if (!userId) throw new Error("User is not Authenticated!!");
+
+	try {
+		await prisma.post.delete({
+			where: {
+				id: postId,
+				userId,
+			},
+		});
+		revalidatePath("/");
+	} catch (error) {
+		console.error(error);
+	}
+};
